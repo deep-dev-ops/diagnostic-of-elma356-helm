@@ -13,5 +13,5 @@
 
 2)  В случае наличия на машине доступа к публичной сети интернет и/или GitHub:
    ```
-   curl -fsSL https://raw.githubusercontent.com/deep-dev-ops/diagnostic-of-elma356-helm/refs/heads/main/diagnostic-bash.sh -o diagnostic-bash.sh && chmod +x diagnostic-bash.sh && ./diagnostic-bash.sh
+   curl -fsSL https://raw.githubusercontent.com/deep-dev-ops/diagnostic-of-elma356-helm/refs/heads/main/diagnostic-bash.sh -o diagnostic-bash.sh && sudo chmod +x diagnostic-bash.sh && sudo ./diagnostic-bash.sh
    ```
