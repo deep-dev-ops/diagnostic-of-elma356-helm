@@ -75,6 +75,11 @@ log_section "ConfigMaps in namespace" "kubectl get configmap -n $namespace" "$fi
 
 log_section "Migration state (v1)" "kubectl exec deploy/deploy -n $namespace -c deploy -- curl -i -H 'Accept: application/json' -H 'Content-Type: application/json' -X GET http://localhost:3000/migration/states" "$file_main"
 log_section "Migration state (v2)" "kubectl exec deploy/deploy -n $namespace -c deploy -- curl -i -H 'Accept: application/json' -H 'Content-Type: application/json' -X GET http://localhost:3000/migration/state" "$file_main"
+
+log_section "Migration state (v1 new version)" "IMAGE=\$(ctr -n k8s.io images ls 2>/dev/null | awk '/toolkit\/curl:8.2.1/ {print \$1; exit}'); kubectl run curl-get-migration-\$(date +%s) -n $namespace --image=\"\$IMAGE\" --image-pull-policy=Never --rm --attach=true --restart=Never --quiet -- /bin/sh -c 'curl -sS -i -H \"Accept: application/json\" -H \"Content-Type: application/json\" -X GET http://deploy:3000/migration/state'" "$file_main"
+log_section "Migration state (v2 new version)" "IMAGE=\$(ctr -n k8s.io images ls 2>/dev/null | awk '/toolkit\/curl:8.2.1/ {print \$1; exit}'); kubectl run curl-get-migration-\$(date +%s) -n $namespace --image=\"\$IMAGE\" --image-pull-policy=Never --rm --attach=true --restart=Never --quiet -- /bin/sh -c 'curl -sS -i -H \"Accept: application/json\" -H \"Content-Type: application/json\" -X GET http://deploy:3000/migration/states'" "$file_main"
+
+
 log_section "Last 30 lines of deployment logs" "kubectl logs deploy/deploy -n $namespace --tail=30" "$file_main"
 
 log_section "Fatal logs in ELMA365 pods" "kubectl logs -n $namespace -l tier=elma365 --all-containers | grep '\"fatal\"'" "$file_main"
