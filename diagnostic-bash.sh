@@ -49,7 +49,6 @@ echo -e "\n### Container Resource Requests / Limits / Usage" >> "$file_main"
   printf "%-40s %-20s %-10s %-10s %-10s %-10s %-10s %-10s\n" \
     "POD" "CONTAINER" "CPU_REQ" "MEM_REQ" "CPU_LIMIT" "MEM_LIMIT" "CPU_USED" "MEM_USED"
 
-  echo "----------------------------------------------------------------------------------------------------------------------------------"
 
   kubectl get pods -n "$namespace" -o json 2>/dev/null | jq -r '
     .items[] | {name: .metadata.name, containers: .spec.containers} |
@@ -75,8 +74,6 @@ echo -e "\n### Container Resource Requests / Limits / Usage" >> "$file_main"
 log_section "Events sorted by date (newest last)" "kubectl get events -n $namespace --sort-by=.metadata.creationTimestamp" "$file_main"
 log_section "ConfigMaps in namespace" "kubectl get configmap -n $namespace" "$file_main"
 
-log_section " " "echo '------------------------------------------------------MIGRATION STATE-------------------------------------------------------------'" "$file_main"
-log_section " " "echo '----------------------------------------------------------------------------------------------------------------------------------'" "$file_main"
 log_section "Migration state (v1)" "kubectl exec deploy/deploy -n $namespace -c deploy -- curl -i -H 'Accept: application/json' -H 'Content-Type: application/json' -X GET http://localhost:3000/migration/states" "$file_main"
 log_section "Migration state (v2)" "kubectl exec deploy/deploy -n $namespace -c deploy -- curl -i -H 'Accept: application/json' -H 'Content-Type: application/json' -X GET http://localhost:3000/migration/state" "$file_main"
 log_section "Migration state (v3)" "REGISTRY=\$(kubectl get pod -n $namespace -l app=worker -o jsonpath='{.items[0].spec.containers[0].image}' | cut -d/ -f1); IMAGE=\"\${REGISTRY}/docker/toolkit/curl:8.2.1\"; kubectl run curl-get-migration-\$(date +%s) -n $namespace --image=\"\$IMAGE\" --rm --attach=true --restart=Never --quiet -- /bin/sh -c 'curl -sS -i -H \"Accept: application/json\" -H \"Content-Type: application/json\" -X GET http://deploy:3000/migration/state'" "$file_main"
@@ -84,8 +81,6 @@ log_section "Migration state (v3)" "REGISTRY=\$(kubectl get pod -n $namespace -l
 log_section "Migration state (v1 new version)" "IMAGE=\$(ctr -n k8s.io images ls 2>/dev/null | awk '/toolkit\/curl:8.2.1/ {print \$1; exit}'); kubectl run curl-get-migration-\$(date +%s) -n $namespace --image=\"\$IMAGE\" --image-pull-policy=Never --rm --attach=true --restart=Never --quiet -- /bin/sh -c 'curl -sS -i -H \"Accept: application/json\" -H \"Content-Type: application/json\" -X GET http://deploy:3000/migration/state'" "$file_main"
 log_section "Migration state (v2 new version)" "IMAGE=\$(ctr -n k8s.io images ls 2>/dev/null | awk '/toolkit\/curl:8.2.1/ {print \$1; exit}'); kubectl run curl-get-migration-\$(date +%s) -n $namespace --image=\"\$IMAGE\" --image-pull-policy=Never --rm --attach=true --restart=Never --quiet -- /bin/sh -c 'curl -sS -i -H \"Accept: application/json\" -H \"Content-Type: application/json\" -X GET http://deploy:3000/migration/states'" "$file_main"
 log_section "Migration state (v3 new version)" "REGISTRY=\$(kubectl get pod -n $namespace -l app=worker -o jsonpath='{.items[0].spec.containers[0].image}' | cut -d/ -f1); IMAGE=\"\${REGISTRY}/docker/toolkit/curl:8.2.1\"; kubectl run curl-get-migration-\$(date +%s) -n $namespace --image=\"\$IMAGE\" --rm --attach=true --restart=Never --quiet -- /bin/sh -c 'curl -sS -i -H \"Accept: application/json\" -H \"Content-Type: application/json\" -X GET http://deploy:3000/migration/states'" "$file_main"
-
-log_section " " "echo '----------------------------------------------------------------------------------------------------------------------------------'" "$file_main"
 
 log_section "Last 30 lines of deployment logs" "kubectl logs deploy/deploy -n $namespace --tail=30" "$file_main"
 
