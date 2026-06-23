@@ -35,6 +35,8 @@ log_section "All resources in namespace ($namespace)" "kubectl get all -n $names
 log_section "Horizontal Pod Autoscalers" "kubectl get hpa -n $namespace" "$file_main"
 log_section "ReplicaSets" "kubectl get replicasets -n $namespace" "$file_main"
 
+log_section "All featureflags for ELMA365" "kubectl -n elma365 get cm elma365-featureflags -n $namespace -o json" "$file_main"
+
 # Resource usage report
 echo -e "\n### Container Resource Requests / Limits / Usage" >> "$file_main"
 {
