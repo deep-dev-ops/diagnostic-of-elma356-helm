@@ -93,7 +93,7 @@ log_section "Helm history for ELMA365" "helm history elma365 -n $namespace" "$fi
 
 # === DESCRIBE FILE ===
 log_section "Node descriptions" "kubectl describe nodes" "$file_describe"
-log_section "Pod descriptions in namespace" "kubectl describe pods -n $namespace" "$file_describe"
+log_section "Pod descriptions in namespace" "kubectl get pods -n $namespace -o json" "$file_describe"
 
 # === GENERAL FILE ===
 log_section "All resources in all namespaces" "kubectl get all -A -o wide" "$file_general"
@@ -112,12 +112,24 @@ logs_dir="$output_dir/pod_logs"
 mkdir -p "$logs_dir"
 
 echo "📦 Collecting pod logs..."
+
 kubectl get pods -n "$namespace" --no-headers -o custom-columns=":metadata.name" | while read -r pod; do
     containers=$(kubectl get pod "$pod" -n "$namespace" -o jsonpath='{.spec.containers[*].name}')
+
     for container in $containers; do
+        # Текущие логи
         log_file="$logs_dir/${pod}-${container}.log"
-        echo "🔄 Collecting logs for $pod ($container)..."
-        kubectl logs "$pod" -n "$namespace" -c "$container" --timestamps > "$log_file" 2>&1 || echo "⚠️ Failed to get logs for $pod/$container" >> "$log_file"
+        echo "🔄 Collecting current logs for $pod ($container)..."
+        kubectl logs "$pod" -n "$namespace" -c "$container" --timestamps \
+            > "$log_file" 2>&1 \
+            || echo "⚠️ Failed to get current logs for $pod/$container" >> "$log_file"
+
+        # Логи предыдущего экземпляра контейнера
+        prev_log_file="$logs_dir/${pod}-${container}-previous.log"
+        echo "🔄 Collecting previous logs for $pod ($container)..."
+        kubectl logs "$pod" -n "$namespace" -c "$container" --previous --timestamps \
+            > "$prev_log_file" 2>&1 \
+            || echo "ℹ️ No previous logs for $pod/$container" >> "$prev_log_file"
     done
 done
 
